@@ -552,35 +552,8 @@ def wavelet_origin(dataset,order,threshold,s,mask,data_normalize,adj,laplacian_n
     L = laplacian(adj, normalized=laplacian_normalize)
     lamb, U = fourier(dataset,L)
 
-    # print np.dot(np.dot(U,np.diag(lamb)),np.transpose(U))
-    # U 列 eigen function
     Weight = weight_wavelet(s, lamb, U)
     del lamb,U,L
-
-    if (mask == True):
-        # mask 需要保留自身，为了使得自身的影响和其他可比，对adj加单位阵
-        if (order == 0):
-            adj = sp.csr_matrix(np.eye(adj.shape[0]))
-        elif (order == 1):
-            adj = adj + sp.csr_matrix(np.eye(adj.shape[0]))
-        elif (order == 2):
-            second_order = adj.dot(adj)
-            adj = adj + sp.csr_matrix(np.eye(adj.shape[0])) + second_order
-            del second_order
-        elif (order == 3):
-            second_order = adj.dot(adj)
-            third_order = adj.dot(second_order)
-            adj = adj + sp.csr_matrix(np.eye(adj.shape[0])) +  second_order + third_order
-            del second_order, third_order
-        elif (order == 4):
-            second_order = adj.dot(adj)
-            third_order = adj.dot(second_order)
-            four_order = adj.dot(third_order)
-            adj = adj + sp.csr_matrix(
-                np.eye(adj.shape[0])) + second_order + third_order + four_order
-            del second_order, third_order, four_order
-
-        Weight = adj.multiply(Weight)
 
     if (sparse_ness):
         # for i in range(Weight.data.shape[0]):
@@ -593,20 +566,8 @@ def wavelet_origin(dataset,order,threshold,s,mask,data_normalize,adj,laplacian_n
     if (data_normalize == True):
         Weight = normalize(Weight, norm='l1', axis=1)
 
-    print Weight.shape
-    print len(np.nonzero(Weight)[0])
-    print Weight
-    # import pickle as pkl
-    # print type(Weight)
-    # wfile = open("data/cora_wavelet_adj.pkl","w")
-    # pkl.dump(Weight,wfile)
-    # wfile.close()
-
-    # print Weight.todense()
-    # Weight = normalize(Weight + sp.eye(adj.shape[0]),norm='l1',axis = 1)
     t_k = [Weight]
     t_k.append(sp.eye(adj.shape[0]))
-    # return Weight,sparse_to_tuple(t_k)
     return sparse_to_tuple(t_k)
 
 def wavelet_gcn_origin(order,threshold,s,mask,data_normalize,adj,laplacian_normalize,sparse_ness = False):
